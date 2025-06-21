@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+{% block title %}Token Status{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10">
+    <h2 class="text-2xl font-semibold mb-4">Your Token Details</h2>
+    <p><strong>Ration Card:</strong> {{ booking.ration_card_number }}</p>
+    <p><strong>Token Number:</strong> {{ booking.token_number }}</p>
+    <p><strong>Date:</strong> {{ booking.date }}</p>
+    <p><strong>Shop Status:</strong> {{ session.get_status_display }}</p>
+    <p><strong>Status:</strong> {{ booking.status }}</p>
+    <p><strong>Estimated Wait Time:</strong> {{ wait_time }} minutes</p>
+    <hr class="my-4">
+    <p><strong>Center:</strong> {{ session.supplier.center_code }} - {{ session.supplier.address }}</p>
+    <p><strong>Timings:</strong> {{ session.start_time }} to {{ session.end_time }}</p>
+</div>
+{% endblock %}

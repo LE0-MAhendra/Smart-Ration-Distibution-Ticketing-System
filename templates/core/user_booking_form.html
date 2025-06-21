@@ -1,0 +1,81 @@
+{% extends 'core/base.html' %}
+{% block title %}Book Ration Token{% endblock %}
+{% block content %}
+
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10">
+    <h2 class="text-xl font-semibold mb-4">Ration Token Booking</h2>
+    <p><strong>Supplier:</strong> {{ session.supplier.agent_name }}</p>
+    <p><strong>Date:</strong> {{ session.date }}</p>
+    <p><strong>Remaining Tokens:</strong> {{ remaining_tokens }}</p>
+
+    {% if error %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Booking Form -->
+    <div id="booking-form">
+        <form method="post">
+            {% csrf_token %}
+            <label>Ration Card Number:</label>
+            <input type="text" name="ration_card" required class="w-full p-2 border rounded mb-3"
+                value="{{ prefill_card }}">
+
+            <label>Phone Number (optional):</label>
+            <input type="text" name="phone" class="w-full p-2 border rounded mb-3">
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Book Token</button>
+            <p class="my-3">
+                Already booked the ticket?
+                <button type="button" onclick="toggleView('status')" class="text-blue-300 ml-auto pl-2">
+                    Check Status
+                </button>
+            </p>
+        </form>
+    </div>
+
+    <!-- Status Form -->
+    <div id="status-form" class="hidden">
+        <form method="get" action="{% url 'user_status' 'R1234567890' %}"
+            onsubmit="event.preventDefault(); location.href=this.action.replace('R1234567890', this.ration_card.value)">
+            <label>Enter Ration Card Number:</label>
+            <input type="text" name="ration_card" placeholder="E.g. R1234567890" class="w-full p-2 border rounded mb-3"
+                required>
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full">Check Status</button>
+            <p class="my-3">
+                Don’t have the ticket?
+                <button type="button" onclick="toggleView('booking')" class="text-blue-300 ml-auto pl-2">
+                    Book Ticket
+                </button>
+            </p>
+        </form>
+    </div>
+    <!-- WhatsApp Share Buttons -->
+    <div class="mt-4 flex flex-col gap-2">
+        <!-- WhatsApp Share Booking Link -->
+        <a href="https://wa.me/?text={{ 'Hey! Book your ration token now using this link: ' | urlencode }}{{ request.build_absolute_uri|urlencode }}"
+            target="_blank"
+            class="flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded hover:bg-green-700">
+            <i class="fab fa-whatsapp"></i> Share Link
+        </a>
+    </div>
+
+</div>
+
+<script>
+    function toggleView(view) {
+        const booking = document.getElementById("booking-form");
+        const status = document.getElementById("status-form");
+
+        if (view === 'booking') {
+            booking.classList.remove("hidden");
+            status.classList.add("hidden");
+        } else {
+            booking.classList.add("hidden");
+            status.classList.remove("hidden");
+        }
+    }
+</script>
+
+{% endblock %}

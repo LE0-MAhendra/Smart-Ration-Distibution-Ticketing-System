@@ -1,0 +1,260 @@
+{% extends 'core/base.html' %}
+{% block title %}Supplier Dashboard{% endblock %}
+{% block content %}
+
+<div class="flex bg-white">
+    <!-- Sidebar Menu -->
+    <div class="w-1/5 bg-gray-900 text-white p-6 ">
+    <h2 class="text-3xl font-extrabold text-green-400 mb-8 tracking-wide">Dashboard</h2>
+    <ul class="space-y-3">
+        <li>
+            <button onclick="showSection('dashboard')" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-800 rounded transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6"/>
+                </svg>
+                Dashboard
+            </button>
+        </li>
+        <li>
+            <button onclick="showSection('form')" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-800 rounded transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01"/>
+                </svg>
+                Session Form
+            </button>
+        </li>
+        <li>
+            <button onclick="showSection('profile')" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-800 rounded transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4.992 4.992 0 0112 16c1.306 0 2.417.835 2.879 2m-7.758 0a4.992 4.992 0 010-2M15 12h.01M9 12h.01M12 14h.01M12 17h.01M12 20h.01"/>
+                </svg>
+                Profile
+            </button>
+        </li>
+    </ul>
+</div>
+
+
+    <!-- Main Content Area -->
+    <div class="w-4/5 p-6 overflow-y-auto">
+        <!-- Welcome Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-semibold">Welcome, <span class="text-green-400">{{ supplier.agent_name }}</span></h2>
+            <a href="{% url 'logout' %}" class="text-red-600 font-bold hover:underline">Logout</a>
+        </div>
+
+        <!-- DASHBOARD SECTION -->
+        <div id="dashboard" class="section">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-100 p-4 rounded shadow">
+                    <h4 class="text-lg font-semibold text-blue-800">Max Tokens</h4>
+                    <p class="text-2xl text-blue-900">{{ session.max_tokens }}</p>
+                </div>
+                <div class="bg-yellow-100 p-4 rounded shadow">
+                    <h4 class="text-lg font-semibold text-yellow-800">Current Token</h4>
+                    <p class="text-2xl text-yellow-900">{{ session.current_token }}</p>
+                </div>
+                <div class="bg-green-100 p-4 rounded shadow">
+                    <h4 class="text-lg font-semibold text-green-800">Total Bookings</h4>
+                    <p class="text-2xl text-green-900">{{ registrations_today }}</p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded shadow w-full mb-6">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Update Current Ticket Status</h3>
+
+                {% if current_booking %}
+                <div class="flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
+                    <!-- Booking Details -->
+                    <div class="flex flex-col text-gray-700 space-y-1">
+                        <div><strong>Token:</strong> {{ current_booking.token_number }}</div>
+                        <div><strong>Ration Card:</strong> {{ current_booking.ration_card_number }}</div>
+                        <div><strong>Phone:</strong> {{ current_booking.phone|default:"N/A" }}</div>
+                        <div><strong>Status:</strong> {{ current_booking.status|title }}</div>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <form method="post" action="{% url 'update_ticket_status' current_booking.id %}" class="flex flex-col w-full md:w-1/2">
+                        {% csrf_token %}
+                        <label class="mb-1 font-medium text-gray-800">Change Status:</label>
+                        <select name="status" class="border border-gray-300 p-2 rounded mb-3">
+                            <option value="open" {% if current_booking.status == "open" %}selected{% endif %}>Open</option>
+                            <option value="closed" {% if current_booking.status == "closed" %}selected{% endif %}>Closed</option>
+                            <option value="cancelled" {% if current_booking.status == "cancelled" %}selected{% endif %}>Cancelled</option>
+                        </select>
+                        <button type="submit"
+                            {% if session.current_token == registrations_today %}
+                                disabled
+                                class="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed"
+                            {% else %}
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-all duration-150"
+                            {% endif %}>
+                            Update & Move to Next
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="text-red-600">No current token found.</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-row w-full gap-4">
+                <div class="bg-white p-6 rounded shadow w-1/2">
+                    <h3 class="text-xl font-bold mb-2">QR Code for User Booking</h3>
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="mb-4 w-48 h-48">
+                    <p class="text-md">Booking link 👉 <a href="{{ link }}" class="text-blue-600 underline break-all">{{ link }}</a></p>
+
+                    <div class="mt-4 flex flex-col gap-2">
+                        <!-- WhatsApp Share Booking Link -->
+                        <a href="https://wa.me/?text={{ 'Hey! Book your ration token now using this link: ' | urlencode }}{{ link|urlencode }}"
+                        target="_blank"
+                        class="flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                            <i class="fab fa-whatsapp"></i> Share Booking Link
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="bg-white p-6 rounded shadow w-1/2">
+                    <h3 class="text-xl font-bold mb-4">Recent Bookings</h3>
+                    <table class="w-full table-auto border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="border px-4 py-2">Token</th>
+                                <th class="border px-4 py-2">Ration Card</th>
+                                <th class="border px-4 py-2">Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in session.userbooking_set.all|dictsort:"token_number"|slice:":10" %}
+                            <tr class="hover:bg-gray-100">
+                                <td class="border px-4 py-2">{{ booking.token_number }}</td>
+                                <td class="border px-4 py-2">{{ booking.ration_card_number }}</td>
+                                <td class="border px-4 py-2">{{ booking.phone }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-2">No bookings yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SESSION FORM SECTION -->
+        <div id="form" class="section hidden">
+            <div class="bg-white p-6 rounded shadow w-full">
+                <h3 class="text-xl font-bold mb-2">Today's Session Settings</h3>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <label class="block mb-2">Start Time:</label>
+                    <input type="time" name="start_time"
+                        value="{{ session.start_time|default_if_none:"09:00"|time:"H:i" }}"
+                        class="p-2 border rounded mb-4 w-full">
+
+                    <label class="block mb-2">End Time:</label>
+                    <input type="time" name="end_time"
+                        value="{{ session.end_time|default_if_none:"17:00"|time:"H:i" }}"
+                        class="p-2 border rounded mb-4 w-full">
+
+                    <label class="block mb-2">Status:</label>
+                    <select name="status" class="p-2 border rounded mb-4 w-full">
+                        <option value="open" {% if session.status == 'open' %}selected{% endif %}>Open</option>
+                        <option value="closed" {% if session.status == 'closed' %}selected{% endif %}>Closed</option>
+                        <option value="cancelled" {% if session.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+
+                    <label class="block mb-2">Max Tokens:</label>
+                    <input type="number" name="max_tokens" min="1" value="{{ session.max_tokens }}" class="p-2 border rounded mb-4 w-full">
+
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Update</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- PROFILE SECTION -->
+        <div id="profile" class="section hidden">
+            <div class="bg-white p-6 rounded shadow w-full">
+                <h3 class="text-xl font-bold mb-4">Supplier Profile</h3>
+                <div id="profile-display" class="bg-white shadow rounded p-6 w-full max-w-2xl">
+                <h3 class="text-2xl font-semibold mb-4 text-gray-800">Profile Information</h3>
+
+                <div class="space-y-3 text-gray-700">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="font-medium">Name:</span>
+                        <span>{{ supplier.agent_name }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="font-medium">Phone:</span>
+                        <span>{{ supplier.phone }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="font-medium">Center Code:</span>
+                        <span>{{ supplier.center_code }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="font-medium">Address:</span>
+                        <span>{{ supplier.address }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="font-medium">Availability Days:</span>
+                        <span>{{ supplier.availability_days }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Status:</span>
+                        <span class="capitalize">{{ supplier.status }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-right">
+                    <button onclick="toggleProfileForm()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded transition duration-150 ease-in-out">
+                        Update Profile
+                    </button>
+                </div>
+            </div>
+
+
+                <form method="post" action="{% url 'supplier_profile_update' %}" id="profile-form" class="hidden mt-4">
+                    {% csrf_token %}
+                    <label class="block mb-2">Name:</label>
+                    <input type="text" name="agent_name" value="{{ supplier.agent_name }}" class="p-2 border rounded mb-4 w-full">
+
+                    <label class="block mb-2">Phone:</label>
+                    <input type="text" name="phone" value="{{ supplier.phone }}" class="p-2 border rounded mb-4 w-full">
+
+                    <label class="block mb-2">Center Code:</label>
+                    <input type="text" name="center_code" value="{{ supplier.center_code }}" class="p-2 border rounded mb-4 w-full">
+
+                    <label class="block mb-2">Address:</label>
+                    <textarea name="address" class="p-2 border rounded mb-4 w-full">{{ supplier.address }}</textarea>
+
+                    <label class="block mb-2">Availability Days:</label>
+                    <input type="number" name="availability_days" value="{{ supplier.availability_days }}" class="p-2 border rounded mb-4 w-full">
+
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function toggleProfileForm() {
+        document.getElementById('profile-display').classList.add('hidden');
+        document.getElementById('profile-form').classList.remove('hidden');
+    }
+
+    // Show dashboard by default on load
+    window.addEventListener('DOMContentLoaded', () => {
+        showSection('dashboard');
+    });
+</script>
+
+{% endblock %}

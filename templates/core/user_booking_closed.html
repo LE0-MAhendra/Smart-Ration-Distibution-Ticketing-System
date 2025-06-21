@@ -1,0 +1,7 @@
+{% extends 'core/base.html' %}
+{% block title %}Booking Closed{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10 text-center">
+    <h2 class="text-xl text-red-500">Booking is currently {{ session.get_status_display }}.</h2>
+</div>
+{% endblock %}
