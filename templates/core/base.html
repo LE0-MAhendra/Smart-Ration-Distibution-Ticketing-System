@@ -3,20 +3,49 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Ration Token System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Smart Ration Distribution Ticketing System for efficient token booking and distribution.">
+    <meta name="keywords" content="ration, token, booking, distribution, public, system, smart, e-governance">
+    <meta name="author" content="leomahendra">
+    <title>{% block title %}Smart Ration Token System{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
 
-<body class="font-sans leading-normal tracking-normal bg-green-200">
-    <header class="text-3xl font-bold text-center shadow-xl p-2 mx-4 mt-4 rounded-xl border-2 border-white">
+<body class="font-sans leading-normal tracking-normal bg-green-200 min-h-screen flex flex-col">
+    <header
+        class="text-3xl font-bold text-center shadow-xl p-4 mx-4 mt-4 rounded-xl border-2 border-white bg-white text-green-700">
         Smart Ration Distribution Ticketing System
     </header>
 
-    <div class="container mx-auto px-4 py-4">
+    <div class="container mx-auto px-4 py-8 flex-grow">
         {% block content %}{% endblock %}
     </div>
+
+    <footer class="bg-green-700 text-white p-6 mt-8 shadow-inner">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div class="mb-4 md:mb-0">
+                <p>&copy; 2025 Mahender. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://github.com/LE0-MAhendra" target="_blank" rel="noopener noreferrer"
+                    class="text-white hover:text-green-300 transition-colors duration-300">
+                    <i class="fab fa-github text-2xl"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/leo-mahendra/" target="_blank" rel="noopener noreferrer"
+                    class="text-white hover:text-green-300 transition-colors duration-300">
+                    <i class="fab fa-linkedin-in text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
